@@ -1,0 +1,138 @@
+App.js
+
+import Product from './components/Product'
+import './App.css';
+// import ProductForm from './components/ProductForm'
+
+function App() {
+  return (
+    <div className="App">
+      {/* <ProductForm /> */}
+      <Product />
+    </div>
+  );
+}
+
+export default App;
+
+
+Index.js
+
+import React from 'react';
+import ReactDOM from 'react-dom';
+import './index.css';
+import App from './App';
+import reportWebVitals from './reportWebVitals';
+
+ReactDOM.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+  document.getElementById('root')
+);
+
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();
+
+ProductForm.js
+
+import React, { Component } from 'react'
+import axios from 'axios'
+
+class ProductForm extends Component {
+    constructor(props) {
+        super(props)
+    
+        this.state = {
+             Product_Group_Name: '',
+             status: '',
+             
+        }
+    }
+
+    changeHandler =(e) => {
+this.setState({[e.target.name]: e.target.value })
+    }
+
+    submitHandler = (e) => {
+e.preventDefault()
+console.log(this.state);
+let obj ={"productGroup":[this.state]}
+axios.post('https://dev.insee.com/mds/products/admin/addProductGroup', obj)
+.then(response => {
+    console.log(response);
+})
+.catch(error => {
+    console.log(error);
+})
+    }
+    
+    render() {
+        const { Product_Group_Name, status } = this.state
+        return (
+            <div>
+                <form onSubmit={this.submitHandler}>
+                    <div>
+                        <input type='text' name='Product_Group_Name' value={Product_Group_Name} onChange={this.changeHandler}></input>
+                    </div>
+
+                    <div>
+                        <input type='text' name='status' value={status} onChange={this.changeHandler}></input>
+                    </div>
+
+                    
+<button type='submit'>Submit</button>
+
+                </form>
+            </div>
+        )
+    }
+}
+
+export default ProductForm
+
+Product.js
+
+import React, { Component } from 'react'
+import axios from 'axios'
+
+class Product extends Component {
+    constructor(props) {
+        super(props)
+    
+        this.state = {
+             products: [],
+             error: []
+        }
+    }
+
+    componentDidMount(){
+        axios.get('https://dev.insee.com/mds/products/admin/getAllProductGroup')
+        .then(response => {
+            console.log(response);
+            this.setState({products: response.data.data})
+        })
+        .catch(error => {
+            console.log(error);
+            this.setState({errorMsg: 'error in retrieving data'})
+        })
+    }
+    
+    render() {
+        const {products, errorMsg } = this.state
+        return (
+            <div>
+List of products               
+{
+    products.length ? products.map((product,index) => <div key={index}>{product.Product_Group_Name}</div>) : null
+}
+{ errorMsg ? <div>{errorMsg}</div> : null }
+            </div>
+        )
+    }
+}
+
+
+export default Product
