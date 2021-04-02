@@ -1,0 +1,514 @@
+index.html
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Web site created using create-react-app"
+    />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <!--
+      manifest.json provides metadata used when your web app is installed on a
+      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
+    -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <!--
+      Notice the use of %PUBLIC_URL% in the tags above.
+      It will be replaced with the URL of the `public` folder during the build.
+      Only files inside the `public` folder can be referenced from the HTML.
+
+      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
+      work correctly both with client-side routing and a non-root public URL.
+      Learn how to configure a non-root public URL by running `npm run build`.
+    -->
+    <title>React App</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <!--
+      This HTML file is a template.
+      If you open it directly in the browser, you will see an empty page.
+
+      You can add webfonts, meta tags, or analytics to this file.
+      The build step will place the bundled scripts into the <body> tag.
+
+      To begin the development, run `npm start` or `yarn start`.
+      To create a production bundle, use `npm run build` or `yarn build`.
+    -->
+  </body>
+</html>
+
+actions/actions.js
+
+import axios from 'axios'
+
+export const fetchData = () => {
+  return (dispatch) => {
+    return axios
+      .get('https://dev.insee.com/mds/products/admin/getAllProductGroup')
+      .then((response) => {
+        console.log(response)
+        // setProducts(response.data.data)
+        dispatch({ type: 'FetchData', data: response })
+      })
+      .catch((error) => {
+        console.log(error)
+        // setError({errorMsg: 'error in retrieving data'})
+        dispatch({ type: 'ERROR', msg: 'Unable to fetch data' })
+      })
+  }
+}
+
+export const sendData = (postData) => {
+  return (dispatch) => {
+    return axios
+      .post(
+        'https://dev.insee.com/mds/products/admin/addProductGroup',
+        postData
+      )
+      .then((response) => {
+        console.log('Post response= ' + response.data)
+        dispatch({
+          type: 'AddData',
+          data: response.data,
+        })
+      })
+  }
+}
+
+components/Product.js
+import React, { useEffect, useState } from 'react'
+// import axios from 'axios'
+import { connect } from 'react-redux'
+import { fetchData } from '../actions/actions'
+// import Pagination from './Pagination'
+import Pagination from 'react-js-pagination'
+
+function Product(props) {
+  const [offset, setOffset] = useState(0)
+  const [data, setData] = useState([])
+  const [perPage] = useState(10)
+  const [itemCount, setItemCount] = useState(0)
+
+  // const p = Pagination([], 10)
+  if (props.data) {
+    console.log(props)
+    if (itemCount == 0) {
+      setItemCount(props.data.data.data.length)
+      setData(props.data.data.data.slice(0, 10))
+      setOffset(1)
+    }
+  }
+
+  useEffect(() => {
+    props.onFetchData()
+
+    // if (props.data) p = Pagination(props.data.data.data, 10)
+  }, [])
+  // const [ products, setProducts] = useState([])
+  // const [ errorMsg , setError ] = useState('')
+
+  // useEffect(() => {
+  //     axios.get('https://dev.insee.com/mds/products/admin/getAllProductGroup')
+  //     .then(response => {
+  //         console.log(response);
+  //         setProducts(response.data.data)
+
+  //     })
+  //     .catch(error => {
+  //         console.log(error);
+  //         setError({errorMsg: 'error in retrieving data'})
+  //     })
+  // },[])
+
+  const changeHandler = (e) => {
+    const begin = (e - 1) * perPage
+    const end = begin + perPage
+    setData(props.data.data.data.slice(begin, end))
+    console.log(e)
+    setOffset(e)
+  }
+
+  return (
+    <div>
+      <Pagination
+        activePage={offset}
+        itemsCountPerPage={perPage}
+        totalItemsCount={itemCount}
+        onChange={changeHandler}
+        itemClass='page-item'
+        linkClass='page-link'
+      />
+      List of products
+      <table className='table'>
+        <tr>
+          <th>Product Name</th>
+          <th>Status</th>
+        </tr>
+        {data && data.length
+          ? data.map((product, index) => (
+              <tr key={index}>
+                <td>{product.Product_Group_Name}</td>
+                <td>{product.status}</td>
+              </tr>
+            ))
+          : null}
+      </table>
+      {/* { errorMsg ? <div>{errorMsg}</div> : null }  */}
+    </div>
+  )
+}
+
+const mapStatetoProps = (state) => {
+  return { num: state.num, data: state.data, error: state.error }
+}
+
+const mapDispatchprops = (dispatch) => {
+  return { onFetchData: () => dispatch(fetchData()) }
+}
+
+export default connect(mapStatetoProps, mapDispatchprops)(Product)
+
+components/ProductForm.js
+
+import React, { useRef } from 'react'
+import axios from 'axios'
+import { connect } from 'react-redux'
+import { sendData } from '../actions/actions'
+import { Form, Button } from 'react-bootstrap'
+import { useHistory } from 'react-router-dom'
+
+function ProductForm(props) {
+  const name = useRef(null)
+  const status = useRef(null)
+  const history = useHistory()
+  if (props.pdata) {
+    console.log(props)
+    alert(props.pdata.message + ' Status=' + props.pdata.status)
+    // window.location = '/'
+    history.push('/')
+  }
+  // const [Product_Group_Name, setProduct_Group_Name] = useState('')
+  // const [status, setStatus] = useState('')
+  //    const  productHandler =(e) => {
+  //         setProduct_Group_Name( e.target.value )
+  //           }
+
+  //           const  statusHandler =(e) => {
+  //             setStatus( e.target.value )
+  //               }
+  const submitHandler = (e) => {
+    e.preventDefault()
+    // console.log(name.current.value);
+    let obj = {
+      productGroup: [
+        {
+          Product_Group_Name: name.current.value,
+          Status: status.current.value,
+        },
+      ],
+    }
+    props.onSendData(obj)
+    // console.log(props);
+    // axios.post('https://dev.insee.com/mds/products/admin/addProductGroup', obj)
+    // .then(response => {
+    //     console.log(response);
+    // })
+    // .catch(error => {
+    //     console.log(error);
+    // })
+  }
+
+  // console.log(props.pdata);
+  // axios.post('https://dev.insee.com/mds/products/admin/addProductGroup', obj)
+  // .then(response => {
+  //     console.log(response);
+  // })
+  // .catch(error => {
+  //     console.log(error);
+  // })
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '100px',
+      }}
+    >
+      {/* <form id='tg' onSubmit={submitHandler}>
+        <div>
+          <input type='text' name='Product_Group_Name' ref={name}></input>
+        </div>
+
+        <div>
+          <input type='text' name='status' ref={status}></input>
+        </div>
+
+        <button type='submit'>Submit</button>
+      </form> */}
+      <div
+        style={{
+          minWidth: '60%',
+          textAlign: 'center',
+          border: 'thick solid black',
+          padding: '25px',
+        }}
+      >
+        <h1>Add Product</h1>
+        <Form onSubmit={submitHandler}>
+          <Form.Control
+            ref={name}
+            type='text'
+            placeholder='Enter Product Group Name'
+          ></Form.Control>
+          <Form.Control
+            ref={status}
+            type='text'
+            placeholder='Enter Status'
+          ></Form.Control>
+          <Button type='submit' variant='primary'>
+            Submit
+          </Button>
+        </Form>
+      </div>
+    </div>
+  )
+}
+
+const mapStatetoProps = (state) => {
+  return {
+    num: state.num,
+    data: state.data,
+    pdata: state.pdata,
+    error: state.error,
+  }
+}
+
+const mapDispatchprops = (dispatch) => {
+  return { onSendData: (fdata) => dispatch(sendData(fdata)) }
+}
+
+// export default ProductForm
+export default connect(mapStatetoProps, mapDispatchprops)(ProductForm)
+
+components/Pagination.js
+
+import React, { useState } from 'react'
+
+function Pagination(data, itemsPerPage) {
+  const [currentPage, setCurrentPage] = useState(0)
+  const maxPage = Math.ceil(data.length / itemsPerPage)
+
+  function currentData() {
+    const begin = (currentPage - 1) * itemsPerPage
+    const end = begin + itemsPerPage
+    return data.slice(begin, end)
+  }
+
+  function next() {
+    setCurrentPage((currentPage) => Math.min(currentPage + 1, maxPage))
+  }
+
+  function prev() {
+    setCurrentPage((currentPage) => Math.max(currentPage - 1, 1))
+  }
+
+  function jump(page) {
+    const pageNumber = Math.max(1, page)
+    setCurrentPage((currentPage) => Math.min(pageNumber, maxPage))
+  }
+
+  return { next, prev, jump, currentData, currentPage, maxPage }
+}
+
+export default Pagination
+
+reducers/myreducer.js
+
+const intialState = {
+  num: 0,
+  data: null,
+  pdata: null,
+  error: '',
+}
+
+const reducer = (state = intialState, action) => {
+  switch (action.type) {
+    case 'FetchData':
+      return { ...state, data: action.data }
+    case 'AddData':
+      return { ...state, pdata: action.data }
+    case 'ERROR':
+      return { ...state, error: action.msg }
+    default:
+      return state
+  }
+}
+
+export default reducer
+
+App.css
+/* nav {
+  background-color: blue;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+  padding: 0px 25px;
+} */
+
+#fo {
+  display: none;
+}
+
+
+App.js
+
+import React from 'react'
+import Product from './components/Product'
+import ProductForm from './components/ProductForm'
+import './App.css'
+// import { Button, Nav, Navbar } from 'react-bootstrap'
+// import { connect } from 'react-redux'
+// import { fetchData } from './actions/actions'
+
+function App() {
+  // useEffect(() => {
+  //   props.onFetchData();
+  //   console.log(props.data);
+  // },[])
+
+  return (
+    <div>
+      {/* <nav>
+        <div className='container'>
+          <div className='title'>
+            <h3>CRUD</h3>
+          </div>
+          <div className='side'>
+            <Button variant='primary'>Add</Button>
+          </div>
+        </div>
+      </nav> */}
+
+      <Product />
+    </div>
+  )
+}
+
+// const mapStatetoProps = (state) => {
+//   return { num: state.num, data: state.data, error: state.error }
+// }
+
+// const mapDispatchprops = (dispatch) => {
+//   return { onFetchData: () => dispatch(fetchData()) }
+// }
+
+// export default connect(mapStatetoProps, mapDispatchprops)(App);
+export default App
+
+
+App.test.js
+
+import { render, screen } from '@testing-library/react';
+import App from './App';
+
+test('renders learn react link', () => {
+  render(<App />);
+  const linkElement = screen.getByText(/learn react/i);
+  expect(linkElement).toBeInTheDocument();
+});
+
+
+index.css
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+index.js
+
+import React from 'react'
+import 'bootstrap/dist/css/bootstrap.min.css'
+import ReactDOM from 'react-dom'
+import './index.css'
+import App from './App'
+import reportWebVitals from './reportWebVitals'
+import { Route, Link, BrowserRouter } from 'react-router-dom'
+import { createStore, applyMiddleware } from 'redux'
+import thunk from 'redux-thunk'
+import { Button, Nav, Navbar } from 'react-bootstrap'
+import { Provider } from 'react-redux'
+import reducer from './reducers/myreducer'
+import ProductForm from './components/ProductForm'
+
+const rup = (
+  <BrowserRouter>
+    <div>
+      <Navbar bg='dark' variant='dark'>
+        <Navbar.Brand href='/'>Navbar</Navbar.Brand>
+        <Nav className='mr-auto'></Nav>
+
+        <Button variant='outline-info' href='/add'>
+          Add
+        </Button>
+      </Navbar>
+      <Route exact path='/' component={App}></Route>
+      {/* <Link to='/' component={App}></Link> */}
+      {/* <Route path='/add' component={ProductForm}></Route> */}
+      <Link to='/add' component={ProductForm}></Link>
+    </div>
+  </BrowserRouter>
+)
+const store = createStore(reducer, applyMiddleware(thunk))
+
+ReactDOM.render(
+  <Provider store={store}>{rup}</Provider>,
+  document.getElementById('root')
+)
+
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals()
+
+reportWebVitals.js
+
+const reportWebVitals = onPerfEntry => {
+  if (onPerfEntry && onPerfEntry instanceof Function) {
+    import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
+      getCLS(onPerfEntry);
+      getFID(onPerfEntry);
+      getFCP(onPerfEntry);
+      getLCP(onPerfEntry);
+      getTTFB(onPerfEntry);
+    });
+  }
+};
+
+export default reportWebVitals;
+
+setupTest.js
+
+// jest-dom adds custom jest matchers for asserting on DOM nodes.
+// allows you to do things like:
+// expect(element).toHaveTextContent(/react/i)
+// learn more: https://github.com/testing-library/jest-dom
+import '@testing-library/jest-dom';
