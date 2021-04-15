@@ -1,0 +1,320 @@
+App.css
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+App.js
+import {
+  createMuiTheme,
+  makeStyles,
+  withStyles,
+} from '@material-ui/core/styles'
+import React, { useState } from 'react'
+import Stepper from '@material-ui/core/Stepper'
+import Step from '@material-ui/core/Step'
+import StepLabel from '@material-ui/core/StepLabel'
+import Button from '@material-ui/core/Button'
+import StepConnector from '@material-ui/core/StepConnector'
+import './App.css'
+import clsx from 'clsx'
+// import Check from '@material-ui/icons/Check'
+// import { ThemeProvider } from '@material-ui/styles'
+// import { green } from '@material-ui/core/colors'
+import { ThemeProvider } from '@material-ui/core/styles'
+
+function App() {
+  // const theme = createMuiTheme({
+  //   pallete: {
+  //     primary: green,
+  //   },
+  // })
+  const muiTheme = createMuiTheme({
+    overrides: {
+      MuiStepIcon: {
+        root: {
+          color: 'grey', // or 'rgba(0, 0, 0, 1)'
+          transition: 'all 1s ease-in',
+          '&$active': {
+            color: 'lightgreen',
+          },
+          '&$completed': {
+            color: 'green',
+          },
+        },
+      },
+    },
+  })
+  const [activeStep, setActiveStep] = useState(0)
+
+  const nextStep = () => {
+    if (activeStep < 3) setActiveStep((currentStep) => currentStep + 1)
+  }
+
+  const previousStep = () => {
+    if (activeStep !== -1) setActiveStep((currentStep) => currentStep - 1)
+  }
+
+  const QontoConnector = withStyles({
+    alternativeLabel: {
+      top: 10,
+      left: 'calc(-50% + 16px)',
+      right: 'calc(50% + 16px)',
+    },
+    active: {
+      '& $line': {
+        borderColor: 'green',
+      },
+    },
+    completed: {
+      '& $line': {
+        borderColor: 'green',
+      },
+    },
+    line: {
+      borderColor: '#eaeaf0',
+      borderTopWidth: 3,
+      borderRadius: 1,
+    },
+  })(StepConnector)
+
+  const steps = getSteps()
+
+  function getSteps() {
+    return ['Shipment Created', 'Block', 'In-Progress']
+  }
+
+  const useQontoStepIconStyles = makeStyles({
+    root: {
+      color: 'green',
+      display: 'flex',
+      height: 22,
+      width: 22,
+      alignItems: 'center',
+    },
+    active: {
+      color: 'green',
+    },
+    circle: {
+      width: 8,
+      height: 8,
+      borderRadius: '50%',
+      backgroundColor: 'green',
+    },
+    completed: {
+      color: 'green',
+      zIndex: 1,
+      fontSize: 18,
+      background: 'black',
+      borderRadius: '10px',
+    },
+  })
+
+  function QontoStepIcon(props) {
+    const classes = useQontoStepIconStyles()
+    const { active, completed } = props
+
+    return (
+      <div
+        className={clsx(classes.root, {
+          [classes.active]: active,
+        })}
+      >
+        {completed ? (
+          <div className={classes.completed}>✔</div>
+        ) : (
+          <div className={classes.circle} />
+        )}
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      {/* <Stepper activeStep={activeStep}>
+        <Step>
+          <StepLabel>First</StepLabel>
+        </Step>
+
+        <Step>
+          <StepLabel>Second</StepLabel>
+        </Step>
+
+        <Step>
+          <StepLabel>Third</StepLabel>
+        </Step>
+      </Stepper> */}
+      <ThemeProvider theme={muiTheme}>
+        {
+          // Your stepper here, should be within MuiThemeProvider
+          <Stepper
+            alternativeLabel
+            activeStep={activeStep}
+            connector={<QontoConnector />}
+          >
+            {steps.map((label) => (
+              <Step key={label}>
+                <StepLabel>{label}</StepLabel>
+              </Step>
+            ))}
+          </Stepper>
+        }
+      </ThemeProvider>
+      {/* <Stepper
+        alternativeLabel
+        activeStep={activeStep}
+        connector={<QontoConnector />}
+      >
+        {steps.map((label) => (
+          <Step key={label}>
+            <StepLabel>{label}</StepLabel>
+          </Step>
+        ))}
+      </Stepper> */}
+
+      <Button variant='outlined' color='primary' onClick={() => previousStep()}>
+        Previous
+      </Button>
+      <Button variant='outlined' color='primary' onClick={() => nextStep()}>
+        Next
+      </Button>
+    </div>
+  )
+}
+
+export default App
+
+index.css
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+index.js
+import React from 'react'
+import ReactDOM from 'react-dom'
+import './index.css'
+import App from './App'
+import { ThemeProvider } from '@material-ui/styles'
+import { createMuiTheme } from '@material-ui/core/styles'
+import theme from './Theme'
+
+ReactDOM.render(
+  <App />,
+
+  document.getElementById('root')
+)
+
+Theme.js
+import { red } from '@material-ui/core/colors'
+
+// A custom theme for this app
+const theme = {
+  palette: {
+    primary: {
+      main: '#556cd6',
+      iconColor: 'green',
+    },
+    secondary: {
+      main: '#19857b',
+      iconColor: 'green',
+    },
+    error: {
+      main: red.A400,
+    },
+    background: {
+      default: '#fff',
+    },
+  },
+}
+
+export default theme
+
+Theme1.js
+import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
+
+const muiTheme = createMuiTheme({
+  overrides: {
+    MuiStepIcon: {
+      root: {
+        color: '#000000', // or 'rgba(0, 0, 0, 1)'
+        '&$active': {
+          color: '#000000',
+        },
+        '&$completed': {
+          color: '#000000',
+        },
+      },
+    },
+  },
+})
+
+index.html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Web site created using create-react-app"
+    />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+    
+    <title>React App</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    
+  </body>
+</html>
