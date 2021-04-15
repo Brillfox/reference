@@ -1,0 +1,358 @@
+index.html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Web site created using create-react-app"
+    />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <!--
+      manifest.json provides metadata used when your web app is installed on a
+      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
+    -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <!--
+      Notice the use of %PUBLIC_URL% in the tags above.
+      It will be replaced with the URL of the `public` folder during the build.
+      Only files inside the `public` folder can be referenced from the HTML.
+
+      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
+      work correctly both with client-side routing and a non-root public URL.
+      Learn how to configure a non-root public URL by running `npm run build`.
+    -->
+    <title>React App</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <!--
+      This HTML file is a template.
+      If you open it directly in the browser, you will see an empty page.
+
+      You can add webfonts, meta tags, or analytics to this file.
+      The build step will place the bundled scripts into the <body> tag.
+
+      To begin the development, run `npm start` or `yarn start`.
+      To create a production bundle, use `npm run build` or `yarn build`.
+    -->
+  </body>
+</html>
+
+
+App.css
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+App.js
+import ProgressBar from './Components/ProgressBar'
+import ShipmentManagemant from './Components/ShipmentManagement'
+import './App.css';
+
+function App() {
+  return (
+    <div className="App">
+
+      <ProgressBar />
+      <br />
+      <ShipmentManagemant />
+    </div>
+  );
+}
+
+export default App;
+
+index.css
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+
+index.js
+import React from 'react';
+import ReactDOM from 'react-dom';
+import './index.css';
+import App from './App';
+
+
+ReactDOM.render(<App />, document.getElementById('root'));
+
+Components/ProgressBar.js
+import {
+    createMuiTheme,
+    makeStyles,
+    withStyles,
+} from '@material-ui/core/styles'
+import React, { useState } from 'react'
+import Stepper from '@material-ui/core/Stepper'
+import Step from '@material-ui/core/Step'
+import StepLabel from '@material-ui/core/StepLabel'
+import Button from '@material-ui/core/Button'
+import StepConnector from '@material-ui/core/StepConnector'
+import '../App.css'
+import clsx from 'clsx'
+
+import { ThemeProvider } from '@material-ui/core/styles'
+
+function ProgressBar() {
+    const muiTheme = createMuiTheme({
+        overrides: {
+            MuiStepIcon: {
+                root: {
+                    color: 'grey',
+
+                    '&$active': {
+                        color: 'green',
+                    },
+                    '&$completed': {
+                        color: 'green',
+                    },
+                },
+            },
+        },
+    })
+    const [activeStep, setActiveStep] = useState(0)
+
+    const nextStep = () => {
+        if (activeStep < 3) setActiveStep((currentStep) => currentStep + 1)
+    }
+
+    const previousStep = () => {
+        if (activeStep !== -1) setActiveStep((currentStep) => currentStep - 1)
+    }
+
+    const QontoConnector = withStyles({
+        alternativeLabel: {
+            top: 10,
+            left: 'calc(-50% + 16px)',
+            right: 'calc(50% + 16px)',
+        },
+        active: {
+            '& $line': {
+                borderColor: 'green',
+            },
+        },
+        completed: {
+            '& $line': {
+                borderColor: 'green',
+            },
+        },
+        line: {
+            borderColor: '#eaeaf0',
+            borderTopWidth: 3,
+            borderRadius: 1,
+        },
+    })(StepConnector)
+
+    const steps = getSteps()
+
+    function getSteps() {
+        return ['Shipment Created', 'Block', 'In-Progress']
+    }
+
+    const useQontoStepIconStyles = makeStyles({
+        root: {
+            color: 'green',
+            display: 'flex',
+            height: 22,
+            width: 22,
+            alignItems: 'center',
+        },
+        active: {
+            color: 'green',
+        },
+        circle: {
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
+            backgroundColor: 'green',
+        },
+        completed: {
+            color: 'green',
+            zIndex: 1,
+            fontSize: 18,
+            background: 'black',
+            borderRadius: '10px',
+        },
+    })
+
+    function QontoStepIcon(props) {
+        const classes = useQontoStepIconStyles()
+        const { active, completed } = props
+
+        return (
+            <div
+                className={clsx(classes.root, {
+                    [classes.active]: active,
+                })}
+            >
+                {completed ? (
+                    <div className={classes.completed}>✔</div>
+                ) : (
+                    <div className={classes.circle} />
+                )}
+            </div>
+        )
+    }
+
+    return (
+        <div>
+
+            <ThemeProvider theme={muiTheme}>
+                {
+
+                    <Stepper
+                        alternativeLabel
+                        activeStep={activeStep}
+                        connector={<QontoConnector />}
+                    >
+                        {steps.map((label) => (
+                            <Step key={label}>
+                                <StepLabel>{label}</StepLabel>
+                            </Step>
+                        ))}
+
+
+
+                        <Button variant='contained' color='secondary'>Full View</Button>
+                    </Stepper>
+
+                }
+            </ThemeProvider>
+
+            <Button variant='outlined' color='primary' onClick={() => previousStep()}>
+                Previous
+            </Button>
+            <Button variant='outlined' color='primary' onClick={() => nextStep()}>
+                Next
+            </Button>
+        </div>
+    )
+}
+
+export default ProgressBar
+
+Components/ShipmentManagement.js
+
+import React, { useState } from 'react'
+import IconButton from "@material-ui/core/IconButton";
+import InputAdornment from "@material-ui/core/InputAdornment";
+import SearchIcon from "@material-ui/icons/Search";
+import TextField from '@material-ui/core/TextField'
+import Radio from '@material-ui/core/Radio'
+
+const ShipmentManagement = () => {
+    const [items, setItems] = useState("Bag CMT & Mortar")
+
+    const handler1 = (e) => {
+        setItems(e.target.value)
+    }
+
+    const handler2 = (e) => {
+        setItems(e.target.value)
+    }
+
+    const handler3 = (e) => {
+        setItems(e.target.value)
+    }
+
+
+    return (
+        <div className='container'>
+            <TextField
+                label="Search"
+                variant='filled'
+                InputProps={{
+                    endAdornment: (
+                        <InputAdornment>
+                            <IconButton>
+                                <SearchIcon />
+                            </IconButton>
+                        </InputAdornment>
+                    )
+                }}
+
+            />
+
+            <Radio
+                value="Bag CMT & Motar"
+                color="primary"
+                checked={items === 'Bag CMT & Mortar'}
+                onChange={handler1}
+            />
+            <span style={{ fontWeight: 'bold' }}>Bag CMT & Motar</span>
+
+            <Radio
+                value="Bulk CMT"
+                color="primary"
+                checked={items === 'Bulk CMT'}
+                onChange={handler2}
+            />
+            <span style={{ fontWeight: 'bold' }}>Bulk CMT</span>
+
+            <Radio
+                value="Bulk Mortar"
+                color="primary"
+                checked={items === 'Bulk Mortar'}
+                onChange={handler3}
+            />
+            <span style={{ fontWeight: 'bold' }}>Bulk Mortar</span>
+
+        </div >
+
+    )
+}
+
+
+export default ShipmentManagement
+
